@@ -1,35 +1,52 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState, useEffect } from "react";
+import { Unity, useUnityContext } from "react-unity-webgl";
+import "./App.css";
+import { Fragment } from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { unityProvider, isLoaded, loadingProgression } = useUnityContext({
+    loaderUrl: "assets/5.loader.js",
+    dataUrl: "assets/5.data",
+    frameworkUrl: "assets/5.framework.js",
+    codeUrl: "assets/5.wasm",
+  });
+
+  const [devicePixelRatio, setDevicePixelRatio] = useState(
+    window.devicePixelRatio
+  );
+
+  useEffect(
+    function () {
+      const updateDevicePixelRatio = function () {
+        setDevicePixelRatio(window.devicePixelRatio);
+      };
+      const mediaMatcher = window.matchMedia(
+        `screen and (resolution: ${devicePixelRatio}dppx)`
+      );
+      mediaMatcher.addEventListener("change", updateDevicePixelRatio);
+      return function () {
+        mediaMatcher.removeEventListener("change", updateDevicePixelRatio);
+      };
+    },
+    [devicePixelRatio]
+  );
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <Fragment>
+      {!isLoaded && (
+        <h1  style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>Loading Game... {Math.round(loadingProgression * 100)}%</h1>
+      )}
+    <div>
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', width: '100vw' }}>
+      <Unity
+        unityProvider={unityProvider}
+        style={{ width: 1280, height: 720 }}
+        devicePixelRatio={devicePixelRatio}
+        />
+    </div>
+        </div>
+        </Fragment>
+  );
 }
 
-export default App
+export default App;
